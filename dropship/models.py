@@ -12,7 +12,10 @@ class TimestampModel(models.Model):
 
 class User(AbstractUser):
     # If there are any fields needed add here.
-
+    is_manager = models.BooleanField(
+        'admin status',
+        default=False,
+    )
     def __str__(self):
         return self.username
 
