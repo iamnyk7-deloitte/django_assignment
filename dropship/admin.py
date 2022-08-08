@@ -5,3 +5,4 @@ from .models import User, Project, Issue
 admin.site.register(User)
 admin.site.register(Project)
 admin.site.register(Issue)
+# admin.site.register(IssueDetails)

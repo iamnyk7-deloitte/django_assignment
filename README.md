@@ -4,14 +4,11 @@ DropShip - An API Platform for DropShip Front-End.
 
 ## Steps to Setup Local Environment.
 
-
-### To clone the repository 
+### To clone the repository
 
 clone the repository using any of the commands.
 
-
 1. `git clone https://github.com/rohitkumar127/django_assignment
-
 
 ### To setup local environment dependencies
 
@@ -47,20 +44,18 @@ clone the repository using any of the commands.
 1. Activate virtual environment using `source venv/bin/activate`
 2. Export environment variables using `export $(cat .env)`
 3. Run server using `python manage.py runserver`
-   
 
 ### To run testcases
 
 1. Activate virtual environment using `source venv/bin/activate`
 2. Export environment variables using `export $(cat .env)`
 3. Run testcases using `python manage.py test`
- 
+
 ### To run a particular testcase
 
 1. Activate virtual environment using `source venv/bin/activate`
 2. Export environment variables using `export $(cat .env)`
 3. Run a particular testcase using `python manage.py test <folder.module.filename.Classname.specific function name> `
- 
 
 ### To generate test coverage
 
@@ -72,6 +67,7 @@ clone the repository using any of the commands.
    It will generate coverage folder in /out
 
 ### To run pylint
+
 1. Activate virtual environment using `source venv/bin/activate`
 2. To run pylint <br>
    `pylint --load-plugins pylint_django <module1> <module2> ...`
