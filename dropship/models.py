@@ -1,4 +1,5 @@
 
+from cmath import pi
 from operator import mod
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -13,7 +14,7 @@ class TimestampModel(models.Model):
 
 class User(AbstractUser,models.Model):
     # If there are any fields needed add here.
-    
+    username=models.CharField(max_length=30,primary_key=True)
     is_manager = models.BooleanField(
         'manager status',
         default=False,
@@ -23,12 +24,15 @@ class User(AbstractUser,models.Model):
 
 
 class Project(TimestampModel,models.Model):
-    title = models.CharField(max_length=128)
+   
+    title = models.CharField(max_length=128,primary_key=True)
     description = models.TextField()
-    code = models.CharField(max_length=64, unique=True, null=False)
+    creator=models.ForeignKey(User,on_delete=models.CASCADE,related_name=
+        "creator")
+    
 
     def __str__(self):
-        return "{0} {1}".format(self.code, self.title)
+        return  self.title
 
 
 class Issue(TimestampModel,models.Model):
@@ -56,7 +60,7 @@ class Issue(TimestampModel,models.Model):
     status=models.CharField(max_length=128)
     
     def __str__(self):
-        # return "{0} -- {1}".format(self.project.code, self.title)
-        return self.id
+        return "{0} -- {1}".format(self.project.creator, self.title)
+        
 
 
