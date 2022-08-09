@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     "rest_framework",
     # Apps
     'dropship',
-    'api'
+    'api',
+    'django_filters',
 ]
 
 MIDDLEWARE = [
@@ -140,5 +141,7 @@ AUTH_USER_MODEL = "dropship.User"
 REST_FRAMEWORK = {
 	'DEFAULT_AUTHENTICATION_CLASSES': [
 		'rest_framework.authentication.BasicAuthentication',
-	]
+	],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 2
 }

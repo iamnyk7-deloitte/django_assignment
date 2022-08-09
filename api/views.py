@@ -14,12 +14,14 @@ from .permissions import IsManager
 from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer
 
 from dropship.models import CommentIssue, Issue, Label,Project, User
-from rest_framework import viewsets
+from rest_framework import viewsets,generics
 from django.db.models import Q
 from django.core import mail
 from django.core.mail import EmailMessage,send_mass_mail,send_mail
-import asyncio
+from .paginationclass import custompaginate
+
 from time import sleep
+from django_filters.rest_framework import DjangoFilterBackend
 
 class ProjectList(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [BasicAuthentication]
@@ -332,4 +334,13 @@ class CommentView(APIView):
 #         except:
 
 #          return JsonResponse({'data':"no"})
-        
+
+
+class FilterView(generics.ListAPIView):
+    queryset = Issue.objects.all()
+    serializer_class = IssueSerializer
+    authentication_classes=[BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['project', 'assigned','type','status','watchers']
+    pagination_class = custompaginate

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include,re_path
 from . import views
 from rest_framework.routers import DefaultRouter
 
@@ -15,7 +15,6 @@ router.register('issueList', views.IssueList,basename="isL")
 
 # crud on issue only manager (use /issueid to do crud on individual)
 router.register('issue',views.IssueCrud,basename='issu')
-
 
 
 urlpatterns = [
@@ -47,4 +46,6 @@ urlpatterns = [
     path('comment/<int:id>',views.CommentView.as_view()),
 
     # path('lable',views.LabelView.as_view())
+    path('issuef/',views.FilterView.as_view()),
+    
 ]
