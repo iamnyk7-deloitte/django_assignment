@@ -44,5 +44,7 @@ urlpatterns = [
     # watcher patch
     path('watcher/',views.WatcherCurd.as_view()),
 
-    path('comment/<int:id>',views.CommentView.as_view())
+    path('comment/<int:id>',views.CommentView.as_view()),
+
+    # path('lable',views.LabelView.as_view())
 ]

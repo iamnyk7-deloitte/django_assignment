@@ -1,4 +1,5 @@
 
+from cProfile import label
 from functools import partial
 from re import L
 from django.conf import settings
@@ -12,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from .permissions import IsManager
 from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer
 
-from dropship.models import CommentIssue, Issue,Project, User
+from dropship.models import CommentIssue, Issue, Label,Project, User
 from rest_framework import viewsets
 from django.db.models import Q
 from django.core import mail
@@ -314,3 +315,21 @@ class CommentView(APIView):
                 return JsonResponse({'data':'user not allowed'})
         except :
             return JsonResponse({'data':'comment doesnr exit'})
+
+# class LabelView(APIView):
+#     authentication_classes = [BasicAuthentication]
+#     permission_classes=[IsAuthenticated]
+
+#     def get(self,request,id=None,labl=None):
+#         try:
+#           b=Label.objects.create(label="oje")
+#           isu=Issue.objects.filter(pk=12).get()
+
+#           isu.lables.add(b)
+#           return JsonResponse({'data':"yes"})
+       
+          
+#         except:
+
+#          return JsonResponse({'data':"no"})
+        
