@@ -39,6 +39,10 @@ urlpatterns = [
     path('statusupdate/<str:pro>/<int:id>',views.StatusUpdate.as_view()),
    
     # search on title desc
-    path('search/<str:key>',views.SearchIssue.as_view())
+    path('search/<str:key>',views.SearchIssue.as_view()),
     
+    # watcher patch
+    path('watcher/',views.WatcherCurd.as_view()),
+
+    path('comment/<int:id>',views.CommentView.as_view())
 ]

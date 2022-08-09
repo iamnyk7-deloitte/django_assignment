@@ -1,6 +1,7 @@
 
-
-import email
+from functools import partial
+from re import L
+from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -9,13 +10,13 @@ from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsManager
-from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus
+from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer
 
-from dropship.models import Issue,Project, User
+from dropship.models import CommentIssue, Issue,Project, User
 from rest_framework import viewsets
 from django.db.models import Q
 from django.core import mail
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage,send_mass_mail,send_mail
 import asyncio
 from time import sleep
 
@@ -78,15 +79,15 @@ def send_email(mailu,pro,id,message):
     issue_name=Issue.objects.filter(pk=id).values('title').get()
     title_mail="An Updated happend in the "+issue_name['title']+"ticket of the project :"+pro
                 
-    connection = mail.get_connection()
+    try: 
         
-    connection.open()
-    email=EmailMessage(title_mail,message,mails)
-    try:
-        connection.send_messages(email)
-        connection.close()
-    except:
-        print("not")
+        send_mail(title_mail,message,'santu.nyk7@gmail.com',mails)
+        print("yes")
+       
+       
+    except Exception as e:
+        print(e)
+        
    
 
             
@@ -171,10 +172,15 @@ class IssueAssign(APIView):
             return JsonResponse({'data':"enter"})
         else:  
             p=Issue.objects.get(project=pro,pk=id)
+            mails=Issue.objects.filter(project=pro,pk=id).values_list('watchers').all()
+            mailu=list(map(lambda x: x[0],list(mails)))
+       
             serial=IssueSerializer(p,request.data,partial=True)
             if p:
                 if serial.is_valid():
+                    msg="New Assignee has been added to issue no"+id+"of project"+pro     
                     serial.save()
+                    send_email(mailu,pro,id,message=msg)
                     return JsonResponse({'Message':"Updated"})
                 else:
                     return JsonResponse({'Message':'user doesnot exits'})
@@ -203,8 +209,8 @@ class StatusUpdate(APIView):
                         serial.save()
                         msg="Status Updated to "+request.data['status']
 
-                        #  gmail stopped less secure apss since 30th may
-                        # send_email(mailu,pro,id,message=msg)
+                        
+                        send_email(mailu,pro,id,message=msg)
                     
                         return JsonResponse({'Message':"Updated"})
                     else:
@@ -232,3 +238,79 @@ class SearchIssue(APIView):
 
         else:
             return JsonResponse({'Message':"enter key"})
+
+class WatcherCurd(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+
+    def patch(self,request,pro=None,id=None):
+        if pro== None or id==None:
+            return JsonResponse({'data':"no"})
+        else:  
+            m=Issue.objects.filter(project=pro,pk=id).get()
+           
+            serial=IssueSerializer(m,request.data,partial=True)
+            if serial.is_valid():
+               serial.save()
+               return JsonResponse({'data':"Updated"})
+            return JsonResponse({'data':serial.errors})
+
+class CommentView(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes=[IsAuthenticated]
+
+    def get(self,request,id=None):
+        try:
+            d=CommentIssue.objects.filter(issue=id)
+            serial=CommentSerializer(d,many=True)
+            return JsonResponse({'da':serial.data})
+        except:
+            return JsonResponse({'d':'s'})
+
+    def post(self,request,id=None):
+        if id==None:
+            return JsonResponse({'data':'enter'})
+        
+        datai=request.data
+        datai['issue']=id
+        datai['user']=request.user
+
+        serial=CommentSerializer(data=request.data)
+        
+
+        if serial.is_valid():
+             
+             serial.save()
+             return JsonResponse({'data':'comment added'})
+        return JsonResponse({'data':serial.errors})
+    
+    def patch(self,request,id=None):
+        try:
+            com=CommentIssue.objects.filter(pk=id).get()
+            
+            if com.user== request.user:
+                data=request.data
+
+                serial=CommentSerializer(com,data=data,partial=True)
+
+                if serial.is_valid():
+                    serial.save()
+                    return JsonResponse({'data':'comment added'})
+                return JsonResponse({'data':serial.errors})
+            else:
+                return JsonResponse({'data':'user not allowed'})
+        except :
+            return JsonResponse({'data':'comment doesnr exit'})
+    
+    def delete(self,request,id=None):
+        try:
+            com=CommentIssue.objects.filter(pk=id).get()
+            
+            if com.user== request.user:
+                CommentIssue.objects.filter(pk=id).delete()
+                return JsonResponse({'data':'Deleted'})
+  
+            else:
+                return JsonResponse({'data':'user not allowed'})
+        except :
+            return JsonResponse({'data':'comment doesnr exit'})

@@ -1,6 +1,7 @@
 from dataclasses import fields
+
 from rest_framework import serializers, viewsets, status
-from dropship.models import Issue,Project
+from dropship.models import CommentIssue, Issue,Project
 
 class IssueSerializer(serializers.ModelSerializer):
    
@@ -23,3 +24,9 @@ class IssueStatus(serializers.ModelSerializer):
      class Meta:
         model=Issue
         fields = ('status')
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=CommentIssue
+        fields = '__all__'

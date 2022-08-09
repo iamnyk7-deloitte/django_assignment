@@ -64,3 +64,11 @@ class Issue(TimestampModel,models.Model):
         
 
 
+class CommentIssue(models.Model):
+    comment = models.TextField()
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='user', null=False)
+    issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='issue', null=False)
+
+    def __str__(self):
+        return "{0} -- {1}".format(self.user.username, self.comment)
+        
