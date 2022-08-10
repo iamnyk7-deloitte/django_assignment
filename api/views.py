@@ -1,7 +1,4 @@
 
-from cProfile import label
-from functools import partial
-from re import L
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
 from requests import delete
@@ -62,7 +59,7 @@ class ProjectIssue(APIView):
     def get(self, request,pro=None):
   
         if pro==None:
-            return JsonResponse({'data':"enter"})
+            return JsonResponse({'data':"Enter Project ID"},status=404)
         else:
             
             p=Issue.objects.filter(project=pro)
@@ -72,7 +69,7 @@ class ProjectIssue(APIView):
                 serializer = IssueSerializer(p,many=True)
                 return JsonResponse({'data':serializer.data})
             else:
-                return JsonResponse({'data':'doesnot exist'})
+                return JsonResponse({'data':'doesnot exist'},status=404)
 
 def send_email(mailu,pro,id,message):
 
@@ -104,7 +101,7 @@ class IssueDetail(APIView):
   
     def get(self, request,pro=None,id=None):
         if pro==None or id==None:
-             return JsonResponse({'data':"enter"})
+             return JsonResponse({'data':"ENter Id"},status=404)
         else:
             p=Issue.objects.filter(project=pro,pk=id)
             print(serializers.serialize('json',p))
@@ -112,7 +109,7 @@ class IssueDetail(APIView):
                 serializer = IssueSerializer(p,many=True)
                 return JsonResponse({'data':serializer.data})
             else:
-                return JsonResponse({'data':'doesnot exist'})
+                return JsonResponse({'data':'doesnot exist'},status=404)
 
 class IssueCreate(APIView):
     authentication_classes = [BasicAuthentication]
@@ -120,7 +117,7 @@ class IssueCreate(APIView):
 
     def post(self,request,pro=None):
         if pro== None:
-            return JsonResponse({'data':"enter"})
+            return JsonResponse({'data':"enter ID"},status=404)
         else:
             p=Project.objects.filter(pk=pro)
 
@@ -133,7 +130,7 @@ class IssueCreate(APIView):
                     return JsonResponse({'msg':"save"})
                
             else:
-                 return JsonResponse({'data':"Project doest exist"})
+                 return JsonResponse({'data':"Project doest exist"},status=404)
 
 class IssueUpdate(APIView):
     authentication_classes = [BasicAuthentication]
@@ -142,7 +139,7 @@ class IssueUpdate(APIView):
     def patch(self,request,pro=None,id=None):
        
         if pro== None or id==None:
-            return JsonResponse({'data':"enter"})
+            return JsonResponse({'data':"enter"},status=404)
         else:  
             p=Issue.objects.get(project=pro,pk=id)
             serial=IssueSerializer(p,request.data,partial=True)
@@ -151,20 +148,20 @@ class IssueUpdate(APIView):
                     serial.save()
                     return JsonResponse({'Message':"Updated"})
                 else:
-                    return JsonResponse({'Message':"Enter Data properly"})
+                    return JsonResponse({'Message':"Enter Data properly"},status=404)
             else:
-               return JsonResponse({'Message':"Doesnot exist"})
+               return JsonResponse({'Message':"Doesnot exist"},status=404)
     
     def delete(self,request,pro=None,id=None):
         if pro== None or id==None:
-            return JsonResponse({'data':"enter"})
+            return JsonResponse({'data':"enter"},status=404)
         else:  
             try:
                 p=Issue.objects.get(project=pro,pk=id)
                 p.delete()
                 return JsonResponse({'Message':"deleted"})
             except:
-                return JsonResponse({'Message':"errror"})
+                return JsonResponse({'Message':"errror"},status=404)
     
 class IssueAssign(APIView):
     
@@ -174,7 +171,7 @@ class IssueAssign(APIView):
     def patch(self,request,pro=None,id=None):
        
         if pro== None or id==None:
-            return JsonResponse({'data':"enter"})
+            return JsonResponse({'data':" Enter ID"})
         else:  
             p=Issue.objects.get(project=pro,pk=id)
             mails=Issue.objects.filter(project=pro,pk=id).values_list('watchers').all()
@@ -199,7 +196,7 @@ class StatusUpdate(APIView):
     def patch(self,request,pro=None,id=None):
        
         if pro== None or id==None:
-            return JsonResponse({'data':"enter"})
+            return JsonResponse({'data':"Enter Id"})
         else:  
             p=Issue.objects.get(project=pro,pk=id)
             q=Issue.objects.filter(project=pro,pk=id).values_list('assigned').get()
@@ -299,9 +296,9 @@ class CommentView(APIView):
         try:
             d=CommentIssue.objects.filter(issue=id)
             serial=CommentSerializer(d,many=True)
-            return JsonResponse({'da':serial.data})
-        except:
-            return JsonResponse({'d':'s'})
+            return JsonResponse({'data':serial.data})
+        except Exception as e:
+            return JsonResponse({'data':e})
 
     def post(self,request,id=None):
         if id==None:
