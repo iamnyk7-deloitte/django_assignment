@@ -12,7 +12,7 @@ from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsManager
-from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer, SprintSerializer
+from api.serializers.managerserializer import IssueSerializer, LableSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer, SprintSerializer
 
 from dropship.models import CommentIssue, Issue, Label,Project, Sprint, User
 from rest_framework import viewsets,generics
@@ -320,22 +320,47 @@ class CommentView(APIView):
         except :
             return JsonResponse({'data':'comment doesnr exit'})
 
-# class LabelView(APIView):
-#     authentication_classes = [BasicAuthentication]
-#     permission_classes=[IsAuthenticated]
+class LabelView(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes=[IsAuthenticated]
 
-#     def get(self,request,id=None,labl=None):
-#         try:
-#           b=Label.objects.create(label="oje")
-#           isu=Issue.objects.filter(pk=12).get()
-
-#           isu.lables.add(b)
-#           return JsonResponse({'data':"yes"})
+    def patch(self,request,id):
+        label = request.data['label']
        
-          
-#         except:
+        if Issue.objects.filter(pk=id).exists():
+            issue = Issue.objects.get(pk=id)
+            try:
+                issue.labels.add(label)
+                issue.save()
+                return JsonResponse({'data':"Lable Added"})
+            except:
+                serial= LableSerializer(data=request.data)
+                if serial.is_valid():
+                    serial.save()
+                    issue.labels.add(label)
+               
+                return JsonResponse({'data':"Lable created and Added"})
+        else:
+            return JsonResponse({'data':"issue Doesnt Exist"})
 
-#          return JsonResponse({'data':"no"})
+    def delete(self,request,id):
+        label = request.query_params.get('label')
+       
+        if Issue.objects.filter(pk=id).exists():
+            issue = Issue.objects.get(pk=id)
+            isl=issue.labels.values_list()
+            a=list(map(lambda x: x[0],list(isl)))
+            print(a)
+            try: 
+                if label in a:
+                    issue.labels.remove(label)
+                    return JsonResponse({'data':"Lable deleted"})
+                else:
+                    return JsonResponse({'data':"Lable doesnt exist"})
+            except Exception as e:
+                return JsonResponse({'data':e})
+        else:
+            return JsonResponse({'data':"issue Doesnt Exist"})
 
 
 class FilterView(generics.ListAPIView):
@@ -344,7 +369,7 @@ class FilterView(generics.ListAPIView):
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['project', 'assigned','type','status','watchers']
+    filterset_fields = ['project', 'assigned','type','status','watchers','sprint']
     pagination_class = custompaginate
 
 

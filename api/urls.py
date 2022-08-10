@@ -45,7 +45,7 @@ urlpatterns = [
 
     path('comment/<int:id>',views.CommentView.as_view()),
 
-    # path('lable',views.LabelView.as_view())
+    path('lable/<int:id>',views.LabelView.as_view()),
     path('issuef/',views.FilterView.as_view()),
     
     # sprint create delete start and stop

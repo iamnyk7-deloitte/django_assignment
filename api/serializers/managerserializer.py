@@ -42,3 +42,8 @@ class SprintSerializer(serializers.ModelSerializer):
     class Meta:
         model=Sprint
         fields="__all__"
+
+class LableSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Label
+        fields="__all__"

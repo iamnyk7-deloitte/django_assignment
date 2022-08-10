@@ -58,6 +58,15 @@ class Issue(TimestampModel,models.Model):
     EPIC = "EPIC"
     TYPES = [(BUG, BUG), (TASK, TASK), (STORY, STORY), (EPIC, EPIC)]
 
+    OPEN = 'open'
+    INPRGRESS = 'in progress'
+    INREVIEW = 'in review'
+    CodeComplete = 'code complete '
+    QATesting = 'qa testing'
+    DONE = 'done'
+    STATUS = [(OPEN, OPEN), (INPRGRESS, INPRGRESS), (INREVIEW, INREVIEW), (CodeComplete, CodeComplete),
+              (QATesting, QATesting), (DONE, DONE)]
+
     title = models.CharField(max_length=128)
     description = models.TextField()
 
@@ -73,7 +82,7 @@ class Issue(TimestampModel,models.Model):
     watchers=models.ManyToManyField(User,related_name=
         "watchers")
 
-    status=models.CharField(max_length=128)
+    status=models.CharField(max_length=128,choices=STATUS)
     labels = models.ManyToManyField(Label,related_name="labels" )
     sprint = models.ForeignKey(Sprint, blank=True, related_name='sprint', on_delete=models.CASCADE, null=True)
     
