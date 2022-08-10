@@ -41,11 +41,18 @@ urlpatterns = [
     path('search/<str:key>',views.SearchIssue.as_view()),
     
     # watcher patch
-    path('watcher/',views.WatcherCurd.as_view()),
+    path('watcher/<str:pro>/<int:id>',views.WatcherCurd.as_view()),
 
     path('comment/<int:id>',views.CommentView.as_view()),
 
-    # path('lable',views.LabelView.as_view())
+    path('lable/<int:id>',views.LabelView.as_view()),
     path('issuef/',views.FilterView.as_view()),
+    
+    # sprint create delete start and stop
+    path('sprint/<str:pro>',views.SprintCreate.as_view()),
+    path('sprintaction/<int:id>',views.SprintStartStop.as_view()),
+
+    path('sprintattach/<int:sp>',views.SprintAddIssue.as_view())
+
     
 ]

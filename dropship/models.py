@@ -34,6 +34,16 @@ class Project(TimestampModel,models.Model):
     def __str__(self):
         return  self.title
 
+class Sprint(models.Model):
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project', null=False)
+    sprint_title = models.CharField(max_length=30)
+    start_date = models.DateField(blank=True,null=True)
+    end_date = models.DateField(blank=True, null=True)
+    sprint_status = models.BooleanField(blank=True, null=True)
+
+    def __str__(self):
+        return  self.sprint_title
+
 
 class Label(models.Model):
     label = models.CharField(max_length=30, primary_key=True)
@@ -48,13 +58,22 @@ class Issue(TimestampModel,models.Model):
     EPIC = "EPIC"
     TYPES = [(BUG, BUG), (TASK, TASK), (STORY, STORY), (EPIC, EPIC)]
 
+    OPEN = 'open'
+    INPRGRESS = 'in progress'
+    INREVIEW = 'in review'
+    CodeComplete = 'code complete '
+    QATesting = 'qa testing'
+    DONE = 'done'
+    STATUS = [(OPEN, OPEN), (INPRGRESS, INPRGRESS), (INREVIEW, INREVIEW), (CodeComplete, CodeComplete),
+              (QATesting, QATesting), (DONE, DONE)]
+
     title = models.CharField(max_length=128)
     description = models.TextField()
 
     type = models.CharField(max_length=8, choices=TYPES, default=BUG, null=False)
 
     project= models.ForeignKey(
-        Project, on_delete=models.CASCADE, related_name="project", null=False
+        Project, on_delete=models.CASCADE, related_name="issue", null=False
     )
 
     assigned=models.ForeignKey(User,on_delete=models.CASCADE,related_name=
@@ -63,11 +82,13 @@ class Issue(TimestampModel,models.Model):
     watchers=models.ManyToManyField(User,related_name=
         "watchers")
 
-    status=models.CharField(max_length=128)
+    status=models.CharField(max_length=128,choices=STATUS)
     labels = models.ManyToManyField(Label,related_name="labels" )
+    sprint = models.ForeignKey(Sprint, blank=True, related_name='sprint', on_delete=models.CASCADE, null=True)
     
     def __str__(self):
         return "{0} -- {1}".format(self.project.creator, self.title)
+        
         
 
 
