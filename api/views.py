@@ -248,17 +248,48 @@ class WatcherCurd(APIView):
     authentication_classes = [BasicAuthentication]
     permission_classes=[IsAuthenticated]
 
-    def patch(self,request,pro=None,id=None):
-        if pro== None or id==None:
-            return JsonResponse({'data':"no"})
-        else:  
-            m=Issue.objects.filter(project=pro,pk=id).get()
-           
-            serial=IssueSerializer(m,request.data,partial=True)
-            if serial.is_valid():
-               serial.save()
-               return JsonResponse({'data':"Updated"})
-            return JsonResponse({'data':serial.errors})
+    def patch(self,request,pro,id):
+        watcher = request.query_params.get('watcher')
+
+        if (Issue.objects.filter(pk=id).exists() and Project.objects.filter(pk=pro).exists()):
+            try:
+                issue = Issue.objects.get(pk=id,project=pro)
+                try:
+                    issue.watchers.add(watcher)
+                    issue.save()
+                    return JsonResponse({'data':"Watcher Added"})
+                except:
+                
+                    return JsonResponse({'data':"User doesnt exist and valid user"})
+            except:
+                 return JsonResponse({'data':"Issue And Project doesnt match"})
+    
+        else:
+           return JsonResponse({'data':'Enter Valid project and '})
+
+    def delete(self,request,pro,id):
+        watcher = request.query_params.get('watcher')
+
+        if (Issue.objects.filter(pk=id).exists() and Project.objects.filter(pk=pro).exists()):
+            try:
+                issue = Issue.objects.get(pk=id,project=pro)
+                isl=issue.watchers.values_list()
+                a=list(map(lambda x: x[0],list(isl)))
+                print(a)
+                try:
+                    if watcher in a:
+                        issue.watchers.remove(watcher)
+                        issue.save()
+                        return JsonResponse({'data':"Watcher Deleted"})
+                    else:
+                        return JsonResponse({'data':"Watcher was not present in this issue"})
+                except:
+                    return JsonResponse({'data':"User doesnt exist"})
+            except:
+                 return JsonResponse({'data':"Issue And Project doesnt match"})
+    
+        else:
+           return JsonResponse({'data':'Enter Valid project and '})
 
 class CommentView(APIView):
     authentication_classes = [BasicAuthentication]
@@ -369,7 +400,7 @@ class FilterView(generics.ListAPIView):
     authentication_classes=[BasicAuthentication]
     permission_classes=[IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
-    filterset_fields = ['project', 'assigned','type','status','watchers','sprint']
+    filterset_fields = ['project', 'assigned','type','status','watchers','sprint','labels']
     pagination_class = custompaginate
 
 

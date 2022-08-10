@@ -41,7 +41,7 @@ urlpatterns = [
     path('search/<str:key>',views.SearchIssue.as_view()),
     
     # watcher patch
-    path('watcher/',views.WatcherCurd.as_view()),
+    path('watcher/<str:pro>/<int:id>',views.WatcherCurd.as_view()),
 
     path('comment/<int:id>',views.CommentView.as_view()),
 
