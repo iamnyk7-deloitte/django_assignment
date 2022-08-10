@@ -22,6 +22,7 @@ from time import sleep
 import datetime
 from django_filters.rest_framework import DjangoFilterBackend
 
+
 class ProjectList(viewsets.ReadOnlyModelViewSet):
     authentication_classes = [BasicAuthentication]
     permission_classes=[IsAuthenticated]
