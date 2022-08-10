@@ -4,6 +4,7 @@ from functools import partial
 from re import L
 from django.conf import settings
 from django.http import HttpResponse, JsonResponse
+from requests import delete
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
@@ -11,9 +12,9 @@ from django.core import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsManager
-from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer
+from api.serializers.managerserializer import IssueSerializer,ProjectSerializer,IssueAssign,IssueStatus,CommentSerializer, SprintSerializer
 
-from dropship.models import CommentIssue, Issue, Label,Project, User
+from dropship.models import CommentIssue, Issue, Label,Project, Sprint, User
 from rest_framework import viewsets,generics
 from django.db.models import Q
 from django.core import mail
@@ -21,6 +22,7 @@ from django.core.mail import EmailMessage,send_mass_mail,send_mail
 from .paginationclass import custompaginate
 
 from time import sleep
+import datetime
 from django_filters.rest_framework import DjangoFilterBackend
 
 class ProjectList(viewsets.ReadOnlyModelViewSet):
@@ -64,7 +66,7 @@ class ProjectIssue(APIView):
         else:
             
             p=Issue.objects.filter(project=pro)
-            print()
+           
 
             if len(p)>0:
                 serializer = IssueSerializer(p,many=True)
@@ -344,3 +346,116 @@ class FilterView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['project', 'assigned','type','status','watchers']
     pagination_class = custompaginate
+
+
+class SprintCreate(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes=[IsAuthenticated,IsManager]
+
+
+    def post(self,request,pro=None):
+        try:
+            if (Project.objects.filter(pk=pro).exists()):
+                datai=request.data
+                datai['project']=pro
+
+                serial=SprintSerializer(data=datai)
+
+                if serial.is_valid():
+                    serial.save()
+                    return JsonResponse({'data':"Sprint Created"})
+                else:
+                    return JsonResponse({'data':serial.errors})
+            else:
+                return JsonResponse({'data':"Project Doesnt exist"})
+
+        except Exception as e:
+            return JsonResponse({'data':e})
+    
+class SprintStartStop(APIView):
+    authentication_classes = [BasicAuthentication]
+    permission_classes=[IsAuthenticated,IsManager]
+
+    def patch(self,request,id=None):
+        try:
+            if (Sprint.objects.filter(pk=id).exists()):
+                sprint = Sprint.objects.get(pk=id)
+                if sprint.sprint_status == None:
+                        sprint.sprint_status = True
+                        sprint.start_date = datetime.date.today()
+                        sprint.save()
+                        return JsonResponse({'data':"Sprint Started"})
+                elif sprint.sprint_status == True:
+                        sprint.sprint_status = False
+                        sprint.end_date = datetime.date.today()
+                        response = "Sprint stoped"
+                        sprint.save()
+                        return JsonResponse({'data':"Sprint Stopped"})
+                else:
+                    return JsonResponse({'data':"Sprint Cant be stopped/Started"})
+
+            else:
+                return JsonResponse({'data':"Sprint Doesnt exist"})
+
+        except Exception as e:
+            return JsonResponse({'data':e})
+    
+    def delete(self,request,id=None):
+        try:
+            if (Sprint.objects.filter(pk=id).exists()):
+                Sprint.objects.get(pk=id).delete()
+                return JsonResponse({'data':"Sprint Delete"})
+            else:
+                return JsonResponse({'data':"Sprint Doesnt exist"})
+
+        except Exception as e:
+            return JsonResponse({'data':e})
+
+class SprintAddIssue(APIView):
+
+    def patch(self,request,sp):
+        isu=request.query_params.get('issue')
+        try:
+            if (Sprint.objects.filter(pk=sp).exists()):
+
+                if(Issue.objects.filter(pk=isu).exists()):
+                    issuep=Issue.objects.get(pk=isu)
+                    sprintp=Sprint.objects.get(pk=sp)
+                    if issuep.project_id==sprintp.project_id:
+                         issuep.sprint_id=sp    
+                         issuep.save()
+                         return JsonResponse({'data':"Sprint Added to issue"})
+                    else:
+                         return JsonResponse({'data':"Sprint Not allowed to add to  issue"})
+
+                else:
+                    return JsonResponse({'data':"Enter Valid Issue ID"})
+            else:
+                return JsonResponse({'data':"Enter Valid sprint"})
+        except Exception as e:
+            return JsonResponse({'data':e})
+    
+    def delete(self,request,sp):
+        isu=request.query_params.get('issue')
+        try:
+            if (Sprint.objects.filter(pk=sp).exists()):
+
+                if(Issue.objects.filter(pk=isu).exists()):
+                    issuep=Issue.objects.get(pk=isu)
+                    if issuep.sprint_id!=None:
+                        sprintp=Sprint.objects.get(pk=sp)
+                        if issuep.project_id==sprintp.project_id:
+                            issuep.sprint_id=None  
+                            issuep.save()
+                            return JsonResponse({'data':"Sprint Deleted to issue"})
+                        else:
+                            return JsonResponse({'data':"Sprint Not allowed to delete   issue"})
+                    else:
+                        return JsonResponse({'data':"No sprint present "})
+
+                else:
+                    return JsonResponse({'data':"Enter Valid Issue ID"})
+            else:
+                return JsonResponse({'data':"Enter Valid sprint"})
+        except Exception as e:
+            return JsonResponse({'data':e})

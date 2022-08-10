@@ -48,4 +48,11 @@ urlpatterns = [
     # path('lable',views.LabelView.as_view())
     path('issuef/',views.FilterView.as_view()),
     
+    # sprint create delete start and stop
+    path('sprint/<str:pro>',views.SprintCreate.as_view()),
+    path('sprintaction/<int:id>',views.SprintStartStop.as_view()),
+
+    path('sprintattach/<int:sp>',views.SprintAddIssue.as_view())
+
+    
 ]

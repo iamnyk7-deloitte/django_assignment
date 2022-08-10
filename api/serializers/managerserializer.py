@@ -2,7 +2,7 @@ from dataclasses import fields
 from pyexpat import model
 
 from rest_framework import serializers, viewsets, status
-from dropship.models import CommentIssue, Issue, Label,Project
+from dropship.models import CommentIssue, Issue, Label,Project,Sprint
 
 class IssueSerializer(serializers.ModelSerializer):
    
@@ -36,3 +36,9 @@ class LableSerializer(serializers.ModelSerializer):
     class Meta:
         model=Label
         fields='__all__'
+
+class SprintSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model=Sprint
+        fields="__all__"
